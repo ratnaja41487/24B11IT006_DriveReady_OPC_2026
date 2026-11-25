@@ -1,31 +1,24 @@
-# Day 2 – Fresh Basket Vegetable Shop Chatbot
-
-**Drive Ready – AI Agents | One Person Company (OPC) Initiative**
+# Day 2 – Interactive Fresh Basket Vegetable Shop Chatbot
 
 ## Objective
 
-Build a Python chatbot that answers customer questions about vegetable prices and calculates the total cost for the quantity they request.
+Build an interactive chatbot that estimates vegetable prices, suggests options within a budget, and answers questions about in-store pickup.
 
-## How It Works
+## Implementation
 
-The chatbot uses the Groq API to understand customer questions. When a customer asks for a price, it can call the Python function `get_price(vegetable, quantity_kg)`. The function looks up the price per kilogram and multiplies it by the requested quantity in kilograms. The chatbot then displays the total in rupees.
-
-For example, if a customer asks for 500 g of carrots, the chatbot passes `0.5` kg to the pricing function.
+- Uses the Groq Python SDK with `openai/gpt-oss-20b`. The system prompt includes a sample price list in rupees per kilogram and asks the model to reply in English or Telugu based on the customer’s language.
+- Keeps up to eight recent exchanges so the chatbot can use details from earlier messages. It also handles rate-limit and connection errors.
+- Demonstrates `get_price()` separately at startup. The function looks up the vegetable, validates the quantity, calculates the price, and logs the result. Chat replies use the price list supplied in the system prompt.
 
 ## How to Run
 
-1. Open [DAY-2.ipynb](./DAY-2.ipynb) in Google Colab.
-2. Configure your `GROQ_API_KEY` privately. Keep the key out of the notebook and the public repository.
-3. Run the notebook cells from top to bottom.
-4. At the `You:` prompt, ask for the price of a vegetable and specify a quantity.
-5. Type `exit` to end the conversation.
+1. Open `DAY-2.ipynb` in Google Colab.
+2. Add your Groq API key to Colab Secrets under `GROK_API_KEY` and grant the notebook access.
+3. Run the cells from top to bottom, starting with the `groq` installation cell.
+4. Enter a question at the `You:` prompt. Type `exit` to stop.
 
 ## Example
 
-**Customer:** How much do 500 grams of carrots cost?
+**Customer:** I need 1 kg of tomatoes and 500 g of carrots. How much will it cost?
 
-**Output:** `Price for 500 g of carrots: Rs. 30.00`
-
-## What I Learned
-
-I learned how to connect an AI chatbot to a Python function so it can use the shop’s price list and calculate a total from a customer’s request.
+**Result:** The chatbot estimates ₹70 total (₹40 for tomatoes and ₹30 for carrots) and tells the customer that the shop will confirm the final price and availability.
