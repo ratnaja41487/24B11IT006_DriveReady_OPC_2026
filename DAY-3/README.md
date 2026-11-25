@@ -1,47 +1,76 @@
-# Fresh Basket Vegetable Shop Chatbot
+# Day 3 – Fresh Basket AI Chatbot with LangChain
 
-Fresh Basket is a customer-support chatbot built with Python and LangChain in Google Colab. It answers vegetable price questions, estimates order totals, explains in-store pickup, and replies in English or Telugu.
+Fresh Basket is a customer-support chatbot for a vegetable shop. It estimates prices in Indian rupees, answers in-store pickup questions, and remembers details from earlier messages in the same Colab session. The notebook demonstrates the same shop prompt with Groq and Google Gemini.
 
-## What the notebook demonstrates
+## Features
 
-- **Price estimates** for vegetables sold by weight, including gram-to-kilogram conversion.
-- **Conversation memory** using LangChain message history.
-- **Two model integrations** using Groq (`openai/gpt-oss-20b`) and Gemini (`gemini-3.1-flash-lite`).
-- **CSV-based testing** with individual results and a pass-rate summary.
-- **A LangChain agent demo** that handles an off-topic request for a flower bouquet. The demo uses no external tools.
+- Estimates order totals from sample per-kilogram prices, including quantities entered in grams.
+- Answers in English or Telugu and recommends vegetables based on a recipe or budget.
+- Uses conversation history to recall a customer's name and order details.
+- Evaluates model replies using CSV test cases and reports passes, failures, and API errors.
+- Includes a LangChain agent demo that redirects an off-topic flower request back to vegetable shopping. The demo runs without external tools.
 
 ## Run in Google Colab
 
-1. Open `DAY-3.ipynb` in Google Colab.
-2. Run this installation cell to set up the dependencies for both model examples and the agent demo:
+1. Open [DAY-3.ipynb](./DAY-3.ipynb) in Google Colab.
+2. Replace the first installation cell with the following, then run it:
 
    ```python
    %pip install -q langchain langchain-groq langchain-google-genai
    ```
 
-3. In Colab’s **Secrets** panel, add `GROQ_API_KEY` for Groq and `GEMINI_API_KEY` for Gemini if you plan to run both examples. Enable **Notebook access** for each key you use.
-4. Before running the notebook, update all Groq setup and verification cells to read `userdata.get("GROQ_API_KEY")`. The current notebook uses `GEMINI_API_KEY` in one Groq setup cell and `GROK_API_KEY` in two others. Keep `GEMINI_API_KEY` in the Gemini setup cell.
-5. Run the model setup, prompt, and chain cells in order. The main test cell creates its own CSV with 18 questions. To run the separate five-question test cell, upload its CSV to `/content/test.csv` or pass its actual path to `run_tests()`.
+3. Open **Secrets** in the Colab sidebar and add the keys for the providers you plan to run. Enable **Notebook access** for each secret.
+
+   | Provider | Colab secret | Model used in the notebook |
+   | --- | --- | --- |
+   | Groq | `GROQ_API_KEY` | `openai/gpt-oss-20b` |
+   | Google Gemini | `GEMINI_API_KEY` | `gemini-3.1-flash-lite` |
+
+4. In the current notebook, update each Groq setup or key-check cell to read `userdata.get("GROQ_API_KEY")`. Those cells currently use a mix of `GEMINI_API_KEY` and `GROK_API_KEY`. The Gemini setup cell continues to read `GEMINI_API_KEY`.
+5. Run the Groq setup, prompt, and chain cells in order. Run the Groq CSV tests before the Gemini cells, which rebuild `fresh_basket_chain` with the Gemini model. The optional agent demo uses the Gemini model defined as `llm`.
+
+Store API keys in Colab Secrets and keep them out of the notebook code and outputs.
 
 ## Example conversation
 
-**Customer:** Hi, I'm Jenny. How much for 1 kg of tomatoes and 500 g of carrots?
+```text
+Customer: Hi, I'm Jenny. How much for 1 kg of tomatoes and 500 g of carrots?
+Assistant: The estimated total is ₹70. Tomatoes cost ₹40 and 500 g of carrots cost ₹30.
 
-**Chatbot:** The estimated total is ₹70. Tomatoes cost ₹40 and 500 g of carrots cost ₹30.
+Customer: What's my name?
+Assistant: Your name is Jenny.
+```
 
-**Customer:** What's my name?
+Try these two messages in one Colab cell after building the chain:
 
-**Chatbot:** Your name is Jenny.
+```python
+history.clear()
+print(ask("Hi, I'm Jenny. How much for 1 kg of tomatoes and 500 g of carrots?"))
+print(ask("What's my name?"))
+```
 
-## Saved test results
+## Test results
 
-| Test run | Passed | Failed | Errors |
-|---|---:|---:|---:|
-| Groq price tests | 18 | 0 | 0 |
-| Gemini CSV tests | 5 | 0 | 0 |
+| Saved notebook run | Passed | Failed | API errors | Pass rate |
+| --- | ---: | ---: | ---: | ---: |
+| Groq price tests | 18 | 0 | 0 | 100% |
+| Gemini CSV tests | 5 | 0 | 0 | 100% |
 
-The notebook records these results from previous runs. Each CSV test starts with empty conversation history. To check memory, send two consecutive questions through `ask()`.
+The Groq test cell creates `/content/fresh_basket_tests.csv` automatically and checks whether each full reply contains the expected rupee amount.
 
-## Order estimates
+The Gemini test cell reads `/content/test.csv`. To reproduce that run, create a CSV with the following content and upload it to Colab as `test.csv` before running the Gemini test cell:
 
-The notebook uses sample prices. The shop confirms actual prices, stock, and pickup times.
+```csv
+question,must_include
+What is the price of 1 kg of onions?,35
+Can I collect my vegetables from the shop?,pickup
+Can I pick up 2 kg of potatoes this evening?,confirm
+How much does 250 g of green beans cost?,20
+What is the total for 2 kg of tomatoes and 1 kg of onions?,115
+```
+
+Each CSV question starts with empty conversation history. The two-message example checks memory separately. The table shows results saved in the notebook. New runs can vary with model responses, API availability, and quota.
+
+## Project scope
+
+Prices are sample estimates. The shop confirms actual prices, stock, and pickup times.
